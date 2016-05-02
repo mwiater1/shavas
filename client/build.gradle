@@ -1,0 +1,4 @@
+group 'csc445.shavas'
+version '1.0-SNAPSHOT'
+
+mainClassName = 'csc445.shavas.client.Client'

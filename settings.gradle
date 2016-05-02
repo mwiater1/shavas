@@ -1,0 +1,4 @@
+rootProject.name = 'shavas'
+include 'tracker'
+include 'client'
+
