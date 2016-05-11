@@ -5,12 +5,15 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/client/client.iml" filepath="$PROJECT_DIR$/.idea/modules/client/client.iml" group="client" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/client/client_main.iml" filepath="$PROJECT_DIR$/.idea/modules/client/client_main.iml" group="client" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/client/client_test.iml" filepath="$PROJECT_DIR$/.idea/modules/client/client_test.iml" group="client" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/core.iml" filepath="$PROJECT_DIR$/.idea/modules/core/core.iml" group="core" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/core_main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/core_main.iml" group="core" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/core_test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/core_test.iml" group="core" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server/server.iml" filepath="$PROJECT_DIR$/.idea/modules/server/server.iml" group="server" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server/server_main.iml" filepath="$PROJECT_DIR$/.idea/modules/server/server_main.iml" group="server" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server/server_test.iml" filepath="$PROJECT_DIR$/.idea/modules/server/server_test.iml" group="server" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/shavas.iml" filepath="$PROJECT_DIR$/.idea/modules/shavas.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/shavas_main.iml" filepath="$PROJECT_DIR$/.idea/modules/shavas_main.iml" group="shavas" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/shavas_test.iml" filepath="$PROJECT_DIR$/.idea/modules/shavas_test.iml" group="shavas" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/tracker/tracker.iml" filepath="$PROJECT_DIR$/.idea/modules/tracker/tracker.iml" group="tracker" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/tracker/tracker_main.iml" filepath="$PROJECT_DIR$/.idea/modules/tracker/tracker_main.iml" group="tracker" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/tracker/tracker_test.iml" filepath="$PROJECT_DIR$/.idea/modules/tracker/tracker_test.iml" group="tracker" />
     </modules>
   </component>
 </project>
