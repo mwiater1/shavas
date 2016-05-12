@@ -1,9 +1,7 @@
 package csc445.shavas.client;
 
-import csc445.shavas.core.Canvas;
 import csc445.shavas.core.Colors;
 import csc445.shavas.core.Constants;
-import csc445.shavas.core.GetQuery;
 import csc445.shavas.core.Pixel;
 import csc445.shavas.core.UpdateCommand;
 
@@ -17,8 +15,10 @@ import spark.template.mustache.MustacheTemplateEngine;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 import static spark.Spark.*;
 
@@ -28,25 +28,55 @@ public final class Client
     public static void main(String[] args)
     {
         // Set the port for the web server
-        port(80);
+        //port(80);
 
         // Create a route for the main page
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("name", "HELLO CLIENT!");
-        get("/", (rq, rs) -> new ModelAndView(map, "index.mustache"), new MustacheTemplateEngine());
+        //HashMap<String, Object> map = new HashMap<>();
+        //map.put("name", "HELLO CLIENT!");
+        //get("/", (rq, rs) -> new ModelAndView(map, "index.mustache"), new MustacheTemplateEngine());
 
-        String[] addresses = {""};
+        Scanner keyboardScanner = new Scanner(System.in);
 
-        Client client = Client.create(addresses);
+        int port = -1;
 
-        client.commitChanges(Client.TEST_PIXELS);
-        System.err.println("committed changes!");
+        while (port < 0)
+        {
+            System.err.println("Please enter a valid port to create a client");
+            try
+            {
+                port = Integer.parseInt(keyboardScanner.next());
+            }
+            catch (NumberFormatException nfe)
+            {
+            }
+        }
+
+        String[] addresses = {"pi.cs.oswego.edu", "rho.cs.oswego.edu"};
+
+        Client client = Client.create(port, addresses);
+
+        String input = "";
+        while (!input.equals("quit"))
+        {
+            System.err.println("Enter \'pixel\' to send a random pixel or \'quit\' to quit");
+            input = keyboardScanner.next();
+
+            if (input.equals("pixel"))
+            {
+                Pixel randomPixel = Pixel.randomPixel();
+                System.err.println("Commiting pixel " + randomPixel);
+                client.commitChanges(Collections.singletonList(randomPixel));
+            }
+        }
+
+        client.close();
+        System.err.println("Exiting");
     }
 
     private Session session;
     private final CopycatClient client;
 
-    public static Client create(String... hostNames)
+    public static Client create(int port, String... hostNames)
     {
         if (hostNames.length == 0)
         {
@@ -57,7 +87,7 @@ public final class Client
 
         for (String hostName : hostNames)
         {
-            hosts.add(new Address(hostName, Constants.CLIENT_PORT));
+            hosts.add(new Address(hostName, port));
         }
 
         return new Client(hosts);
@@ -87,11 +117,12 @@ public final class Client
         client.connect(cluster).join();
         System.err.println("Client::Client - connected to cluster");
 
-        Pixel pixel = new Pixel(0, 0, Colors.BLACK);
-        System.err.println("Client::Client - made new pixel");
+        client.onEvent("Event", (e) -> System.err.println("Client::Client - e: " + e));
+        client.onEvent("UpdateCommand", (u) -> System.err.println("Client::Client - u: " + u));
     }
 
-    private static final List<Pixel> TEST_PIXELS = Arrays.asList(new Pixel(0, 0, Colors.BLACK),
+    private static final List<Pixel> TEST_PIXELS = Arrays.asList(
+            new Pixel(0, 0, Colors.BLACK),
             new Pixel(0, 1, Colors.BLACK),
             new Pixel(1, 0, Colors.BLACK),
             new Pixel(1, 1, Colors.BLACK));
@@ -99,5 +130,10 @@ public final class Client
     public void commitChanges(List<Pixel> pixelDiffs)
     {
         client.submit(new UpdateCommand(pixelDiffs)).join();
+    }
+
+    public void close()
+    {
+        client.close();
     }
 }

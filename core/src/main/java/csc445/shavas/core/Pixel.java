@@ -2,6 +2,7 @@ package csc445.shavas.core;
 
 import java.awt.Color;
 import java.io.Serializable;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class Pixel implements Serializable
 {
@@ -69,5 +70,21 @@ public final class Pixel implements Serializable
     public static int getAlpha(int color)
     {
         return color >>> 24;
+    }
+
+    public static Pixel randomPixel()
+    {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+
+        Colors[] colorValues = Colors.values();
+        Colors color = colorValues[random.nextInt(colorValues.length)];
+
+        return new Pixel(random.nextInt(Constants.CANVAS_WIDTH), random.nextInt(Constants.CANVAS_HEIGHT), color.color);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Pixel: (" + x + "," + y + "); color: " + color;
     }
 }

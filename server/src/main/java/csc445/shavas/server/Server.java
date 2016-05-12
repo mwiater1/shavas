@@ -1,11 +1,5 @@
 package csc445.shavas.server;
 
-import csc445.shavas.core.Canvas;
-import csc445.shavas.core.Colors;
-import csc445.shavas.core.Constants;
-import csc445.shavas.core.GetQuery;
-import csc445.shavas.core.Pixel;
-import csc445.shavas.core.UpdateCommand;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.NettyTransport;
 import io.atomix.catalyst.util.Listener;
@@ -14,26 +8,67 @@ import io.atomix.copycat.server.storage.Storage;
 import io.atomix.copycat.server.storage.StorageLevel;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public final class Server
 {
-    public static void main(String[] args) throws UnknownHostException
+    public static void main(String[] args) throws IOException
     {
-        String[] cluster = {"127.0.0.1"};
+        boolean configExists = false;
 
-        InetAddress serverAddress = InetAddress.getByName("localhost");
+        File logDirectory = new File(LOG_PATH);
 
-        Server server = Server.create(serverAddress, cluster);
+        if (logDirectory.isDirectory())
+        {
+            File[] logs = logDirectory.listFiles();
+
+            configExists = logs != null && logs.length > 0;
+        }
+
+        System.err.println("Server::main - configExists: " + configExists);
+
+        File clusterConfig = new File(CLUSTER_CONFIG_FILE);
+
+        Scanner clusterScanner = new Scanner(clusterConfig);
+
+        if (!clusterScanner.hasNext())
+        {
+            throw new AssertionError("cluster.txt must have the server address and the desired port separated by a space as the first entries in the file.");
+        }
+
+        String serverAddress = clusterScanner.next();
+        int port = Integer.parseInt(clusterScanner.next());
+
+        List<String> hostNames = new ArrayList<>();
+
+        while (clusterScanner.hasNext())
+        {
+            hostNames.add(clusterScanner.next());
+        }
+
+        clusterScanner.close();
+
+        String[] hosts = new String[hostNames.size()];
+        hostNames.toArray(hosts);
+
+        Server server = Server.create(serverAddress, port, hosts);
     }
 
+    public static final String LOG_PATH = "logs";
+    public static final String CLUSTER_CONFIG_FILE = "cluster.txt";
+
     private final CopycatServer server;
+    private final List<Address> cluster;
 
     private Server(Address serverAddress, List<Address> cluster)
     {
+        this.cluster = cluster;
+
         server = CopycatServer.builder(serverAddress)
                 .withStateMachine(CanvasStateMachine::new)
 
@@ -59,38 +94,69 @@ public final class Server
         Listener<CopycatServer.State> stateChangeListener = server.onStateChange((state) ->
                 System.err.println("Server::Server - onStateChange: new state " + state.name()));
 
-        server.bootstrap().join();
-
-        Pixel testPixel = new Pixel(0, 0, Colors.BLACK);
-        System.err.println("Server::Server - made test pixel");
-    }
-
-    public static Server create(InetAddress serverIp, String... addresses)
-    {
-        List<Address> cluster = new ArrayList<>();
-
-        for (String hostName : addresses)
+        if (cluster == null)
         {
-            cluster.add(new Address(hostName, Constants.SERVER_PORT));
+            server.bootstrap().join();
+            System.err.println("Server::Server - bootstrapped cluster");
+        }
+        else
+        {
+            server.join(cluster).join();
+            System.err.println("Server::Server - joined cluster " + cluster);
         }
 
-        Address serverAddress = new Address(serverIp.getHostAddress(), Constants.SERVER_PORT);
+        Thread thread = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                Scanner kbScanner = new Scanner(System.in);
+
+                for (; ; )
+                {
+                    String input = kbScanner.next();
+                    System.err.println("Server::Server::kbThread - input: " + input);
+                    if (input.equals("quit"))
+                    {
+                        server.leave();
+                    }
+                    else if (input.equals("restart") && server.state().equals(CopycatServer.State.INACTIVE))
+                    {
+                        server.join(cluster).join();
+                        System.err.println("Server::run - rejoined cluster");
+                    }
+                }
+            }
+        };
+
+        thread.start();
+    }
+
+    public static Server create(InetAddress serverIp, int port, String... addresses)
+    {
+        List<Address> cluster;
+
+        if (addresses.length > 0)
+        {
+            cluster = new ArrayList<>();
+
+            for (String hostName : addresses)
+            {
+                cluster.add(new Address(hostName, port));
+            }
+        }
+        else
+        {
+            cluster = null;
+        }
+
+        Address serverAddress = new Address(serverIp.getHostAddress(), port);
 
         return new Server(serverAddress, cluster);
     }
 
-    static class Builder
+    public static Server create(String serverIp, int port, String... addresses) throws UnknownHostException
     {
-        private InetAddress serverIp;
-        private List<Address> clusterConfiguration = null;
-
-        private Builder()
-        {
-        }
-
-        public Builder builder()
-        {
-            return new Builder();
-        }
+        return Server.create(InetAddress.getByName(serverIp), port, addresses);
     }
 }

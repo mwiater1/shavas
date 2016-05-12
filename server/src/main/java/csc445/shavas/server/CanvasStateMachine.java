@@ -30,6 +30,8 @@ public class CanvasStateMachine extends StateMachine implements Snapshottable
     {
         List<Pixel> pixelDiffs = commit.command().pixelDiffs();
 
+        System.err.println("CanvasStateMachine::update - commit [" + commit + "] and pixelDiffs " + pixelDiffs);
+
         canvas.update(pixelDiffs);
         commit.close();
     }

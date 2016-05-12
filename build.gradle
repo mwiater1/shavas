@@ -11,6 +11,7 @@ allprojects {
     }
 
     dependencies {
+        compile 'org.slf4j:slf4j-api:1.7.21'
         compile 'com.google.code.gson:gson:2.6.2'
         compile 'io.atomix.catalyst:catalyst-netty:1.0.7'
         compile 'io.atomix.copycat:copycat-client:1.0.0-rc7'
