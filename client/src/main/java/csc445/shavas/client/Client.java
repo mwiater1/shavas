@@ -4,6 +4,7 @@ import csc445.shavas.core.Colors;
 import csc445.shavas.core.Constants;
 import csc445.shavas.core.Pixel;
 import csc445.shavas.core.UpdateCommand;
+import csc445.shavas.core.JoinCommand;
 
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.NettyTransport;
@@ -51,7 +52,8 @@ public final class Client
             }
         }
 
-        String[] addresses = {"pi.cs.oswego.edu", "rho.cs.oswego.edu"};
+//        String[] addresses = {"pi.cs.oswego.edu", "rho.cs.oswego.edu"};
+        String[] addresses = {"127.0.0.1"};
 
         Client client = Client.create(port, addresses);
 
@@ -109,13 +111,21 @@ public final class Client
                 .register(csc445.shavas.core.UpdateCommand.class)
                 .register(csc445.shavas.core.GetQuery.class)
                 .register(csc445.shavas.core.Canvas.class)
-                .register(csc445.shavas.core.Pixel.class);
+                .register(csc445.shavas.core.Pixel.class)
+                .register(csc445.shavas.core.JoinCommand.class);
 
-        client.onStateChange((state) ->
-                System.err.println("Client::Client - onStateChangeListener - new state " + state.name()));
+        client.onStateChange((state) -> {
+                System.err.println("Client::Client - onStateChangeListener - new state " + state.name());
+                if (state == CopycatClient.State.CONNECTED) {
+
+                    client.submit(new JoinCommand()).join();
+                }
+            });
 
         client.connect(cluster).join();
         System.err.println("Client::Client - connected to cluster");
+
+        client.onEvent("change", () -> System.out.println("change"));
 
         client.onEvent("Event", (e) -> System.err.println("Client::Client - e: " + e));
         client.onEvent("UpdateCommand", (u) -> System.err.println("Client::Client - u: " + u));

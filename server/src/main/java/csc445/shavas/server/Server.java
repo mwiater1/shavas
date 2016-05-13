@@ -89,7 +89,8 @@ public final class Server
                 .register(csc445.shavas.core.Canvas.class)
                 .register(csc445.shavas.core.Pixel.class)
                 .register(csc445.shavas.core.UpdateCommand.class)
-                .register(csc445.shavas.core.GetQuery.class);
+                .register(csc445.shavas.core.GetQuery.class)
+                .register(csc445.shavas.core.JoinCommand.class);
 
         Listener<CopycatServer.State> stateChangeListener = server.onStateChange((state) ->
                 System.err.println("Server::Server - onStateChange: new state " + state.name()));
