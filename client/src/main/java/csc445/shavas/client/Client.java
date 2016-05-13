@@ -1,26 +1,22 @@
 package csc445.shavas.client;
 
 import csc445.shavas.core.Colors;
-import csc445.shavas.core.Constants;
 import csc445.shavas.core.Pixel;
 import csc445.shavas.core.UpdateCommand;
-
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.NettyTransport;
+import io.atomix.catalyst.util.Listener;
 import io.atomix.copycat.client.ConnectionStrategies;
 import io.atomix.copycat.client.CopycatClient;
-import io.atomix.copycat.session.Session;
-import spark.ModelAndView;
-import spark.template.mustache.MustacheTemplateEngine;
+import io.atomix.copycat.session.Event;
+
+import javax.swing.event.ChangeEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
-
-import static spark.Spark.*;
 
 public final class Client
 {
@@ -43,7 +39,7 @@ public final class Client
             }
         }
 
-        String[] addresses = {"pi.cs.oswego.edu", "rho.cs.oswego.edu"};
+        String[] addresses = {"pi.cs.oswego.edu", "rho.cs.oswego.edu", "wolf.cs.oswego.edu"};
 
         Client client = Client.create(port, addresses);
 
@@ -65,7 +61,6 @@ public final class Client
         System.err.println("Exiting");
     }
 
-    private Session session;
     private final CopycatClient client;
 
     public static Client create(int port, String... hostNames)
@@ -109,8 +104,9 @@ public final class Client
         client.connect(cluster).join();
         System.err.println("Client::Client - connected to cluster");
 
-        client.onEvent("Event", (e) -> System.err.println("Client::Client - e: " + e));
-        client.onEvent("UpdateCommand", (u) -> System.err.println("Client::Client - u: " + u));
+        client.session().onStateChange((s) -> System.err.println("Client::Client - new state " + s));
+
+        client.onEvent("change", (e) -> System.err.println("Client::Client - e: " + e));
     }
 
     private static final List<Pixel> TEST_PIXELS = Arrays.asList(
