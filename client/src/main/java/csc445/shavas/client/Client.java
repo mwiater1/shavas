@@ -125,7 +125,9 @@ public final class Client
         client.connect(cluster).join();
         System.err.println("Client::Client - connected to cluster");
 
-        client.onEvent("change", () -> System.out.println("change"));
+        client.<List<Pixel>>onEvent("change", (pixels) -> {
+            pixels.forEach((p) -> System.out.println(p.toString()));
+        });
 
         client.onEvent("Event", (e) -> System.err.println("Client::Client - e: " + e));
         client.onEvent("UpdateCommand", (u) -> System.err.println("Client::Client - u: " + u));

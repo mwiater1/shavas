@@ -45,7 +45,7 @@ public class CanvasStateMachine extends StateMachine implements Snapshottable, S
 
         System.err.println("CanvasStateMachine::update - commit [" + commit + "] and pixelDiffs " + pixelDiffs);
 
-        listeners.forEach(session -> session.publish("change"));
+        listeners.forEach(session -> session.publish("change", pixelDiffs));
 //        commit.session().publish("change");
 
         canvas.update(pixelDiffs);
