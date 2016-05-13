@@ -11,7 +11,7 @@
             dot_flag = false;
 
     var x = "black",
-            y = 8;
+            y = 5;
     // Open a websocket
     var ws = new WebSocket("ws://localhost/ws");
 
@@ -24,6 +24,8 @@
         h = canvas.height;
 
         // Set the canvas data
+        clearCanvas(ctx);
+
         data = ctx.getImageData(0, 0, 500, 500).data;
 
         canvas.addEventListener("mousemove", function (e) {
@@ -65,7 +67,7 @@
                 break;
         }
         if (x == "white") y = 14;
-        else y = 8;
+        else y = 5;
 
     }
 
@@ -77,13 +79,6 @@
         ctx.lineWidth = y;
         ctx.stroke();
         ctx.closePath();
-    }
-
-    function erase() {
-        var m = confirm("Want to clear");
-        if (m) {
-            ctx.clearRect(0, 0, w, h);
-        }
     }
 
     function findxy(res, e) {
@@ -104,11 +99,12 @@
             }
         }
         if (res == 'up' || res == "out") {
+            if(res == 'up') {
+                findChange(ctx.getImageData(0, 0, 500, 500).data);
+            }
             flag = false;
         }
-        if(res == 'up') {
-            findChange(ctx.getImageData(0, 0, 500, 500).data);
-        }
+
         if (res == 'move') {
             if (flag) {
                 prevX = currX;
@@ -126,18 +122,38 @@
         this.color = (r << 16) + (g << 8) + b;
     }
 
+    ws.onmessage = function(event) {
+        var canvasUpdates = JSON.parse(event.data);
+
+        var currentCanvas = ctx.getImageData(0, 0, 500, 500);
+
+        for(i = 0; i < canvasUpdates.length; i++) {
+            var x = canvasUpdates[i].x;
+            var y = canvasUpdates[i].y;
+            currentCanvas.data[((500 * y) + x) * 4] = (canvasUpdates[i].color >>> 16) & 0x00FF;
+            currentCanvas.data[((500 * y) + x) * 4 + 1] = (canvasUpdates[i].color >>> 8) & 0x0000FF;
+            currentCanvas.data[((500 * y) + x) * 4 + 2] = canvasUpdates[i].color & 0x000000FF;
+        }
+
+        ctx.putImageData(currentCanvas,0, 0);
+        console.log("Got Message!")
+    };
+
     function findChange(newData) {
+        // Create a place to store the pixels
         var pixels = [];
-        // iterate over all pixels based on x and y coordinates
+        // Loop over all of the pixels based on x and y coordinates
         for(var y = 0; y < 500; y++) {
-            // loop through each column
+            // Loop over each column
             for(var x = 0; x < 500; x++) {
+                // Get the old and new pixel data
                 var nred = newData[((500 * y) + x) * 4];
                 var ngreen = newData[((500 * y) + x) * 4 + 1];
                 var nblue = newData[((500 * y) + x) * 4 + 2];
                 var ored = data[((500 * y) + x) * 4];
                 var ogreen = data[((500 * y) + x) * 4 + 1];
                 var oblue = data[((500 * y) + x) * 4 + 2];
+                // Check if this pixel has changed
                 if((nred != ored) || (ngreen != ogreen) || (nblue != oblue)) {
                     console.log("CHANGE!");
                     pixels.push(new pixel(x,y,nred,ngreen,nblue));
@@ -154,5 +170,19 @@
         if(pixels.length != 0) {
             ws.send(JSON.stringify(pixels));
         }
+    }
+    
+    function clearCanvas(ctx) {
+        // Get the canvas data
+        var canvasData = ctx.getImageData(0, 0, 500, 500);
+        // Change the requested pixels
+        for(var i = 0, n = canvasData.data.length; i < n; i += 4) {
+            canvasData.data[i] = 255;
+            canvasData.data[i + 1] = 255;
+            canvasData.data[i + 2] = 255;
+            canvasData.data[i + 3] = 255;
+        }
+        // Update the canvas
+        ctx.putImageData(canvasData, 0, 0);
     }
 </script>

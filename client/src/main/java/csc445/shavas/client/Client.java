@@ -16,17 +16,26 @@ import io.atomix.copycat.session.Event;
 
 import javax.swing.event.ChangeEvent;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+
+import static spark.Spark.get;
+import static spark.Spark.port;
+import static spark.Spark.webSocket;
 
 public final class Client
 {
 
     public static void main(String[] args)
     {
+        //Set the port for the web server
+        port(80);
+
+        // Set the websocket
+        webSocket("/ws", WebsocketListener.class);
+
+        // Main route
+        get("/", (rq, rs) -> new ModelAndView(new HashMap<>(), "index.mustache"), new MustacheTemplateEngine());
+
         Scanner keyboardScanner = new Scanner(System.in);
 
         int port = -1;
@@ -46,7 +55,7 @@ public final class Client
         String[] addresses = {"pi.cs.oswego.edu", "rho.cs.oswego.edu", "wolf.cs.oswego.edu"};
 
         Client client = Client.create(port, addresses);
-        WebsocketListener.client = client;
+        WebsocketListener.setClient(client);
 
         String input = "";
         while (!input.equals("quit"))
