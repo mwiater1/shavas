@@ -91,7 +91,8 @@ public final class Server
                 .register(csc445.shavas.core.Canvas.class)
                 .register(csc445.shavas.core.Pixel.class)
                 .register(csc445.shavas.core.UpdateCommand.class)
-                .register(csc445.shavas.core.GetQuery.class);
+                .register(csc445.shavas.core.GetQuery.class)
+                .register(csc445.shavas.core.JoinCommand.class);
 
 
         server.onStateChange((state) ->
