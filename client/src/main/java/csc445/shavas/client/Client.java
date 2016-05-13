@@ -10,6 +10,7 @@ import io.atomix.catalyst.util.Listener;
 import io.atomix.copycat.client.ConnectionStrategies;
 import io.atomix.copycat.client.CopycatClient;
 import io.atomix.copycat.session.Session;
+import org.eclipse.jetty.websocket.api.WebSocketListener;
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 import io.atomix.copycat.session.Event;
@@ -125,14 +126,8 @@ public final class Client
         System.err.println("Client::Client - connected to cluster");
         client.session().onStateChange((s) -> System.err.println("Client::Client - new state " + s));
 
-        client.onEvent("change", (e) -> System.err.println("Client::Client - e: " + e));
 
-        client.<List<Pixel>>onEvent("change", (pixels) -> {
-            pixels.forEach((p) -> System.out.println(p.toString()));
-        });
-
-        client.onEvent("Event", (e) -> System.err.println("Client::Client - e: " + e));
-        client.onEvent("UpdateCommand", (u) -> System.err.println("Client::Client - u: " + u));
+        client.<List<Pixel>>onEvent("change", WebsocketListener::sendPixels);
     }
 
     private static final List<Pixel> TEST_PIXELS = Arrays.asList(

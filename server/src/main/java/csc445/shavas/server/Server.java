@@ -2,7 +2,6 @@ package csc445.shavas.server;
 
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.NettyTransport;
-import io.atomix.catalyst.util.Listener;
 import io.atomix.copycat.server.CopycatServer;
 import io.atomix.copycat.server.cluster.Cluster;
 import io.atomix.copycat.server.storage.Storage;
@@ -13,10 +12,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 
 public final class Server
 {
@@ -56,7 +53,8 @@ public final class Server
 
         clusterScanner.close();
 
-        String[] hosts = (String[]) hostNames.toArray();
+        String[] hosts = new String[hostNames.size()];
+        hostNames.toArray(hosts);
 
         Server server = Server.create(serverAddress, port, hosts);
     }
