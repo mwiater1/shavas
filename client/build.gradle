@@ -3,4 +3,4 @@ version '1.0-SNAPSHOT'
 
 apply plugin: 'application'
 
-mainClassName = 'csc445.shavas.client.Client'
+mainClassName = 'csc445.shavas.client.Test'

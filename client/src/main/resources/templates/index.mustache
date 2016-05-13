@@ -1,9 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css"  media="screen,projection"/>
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    {{> style}}
 </head>
-<body>
-<h1>{{name}}</h1>
+
+<body onload="init()">
+<div class="container">
+    <div class="row">
+        <div class="col s10" style="">
+            <canvas id="myCanvas" width="500" height="500" style="border:1px solid #000000; margin: 10px 10px 10px 10px;"></canvas>
+        </div>
+        <div class="col s2" style="background-color: mediumpurple">
+            <div>Choose Color</div>
+            <div style="width:10px;height:10px;background:green;" id="green" onclick="color(this)"></div>
+            <div style="width:10px;height:10px;background:blue;" id="blue" onclick="color(this)"></div>
+            <div style="width:10px;height:10px;background:red;" id="red" onclick="color(this)"></div>
+            <div style="width:10px;height:10px;background:yellow;" id="yellow" onclick="color(this)"></div>
+            <div style="width:10px;height:10px;background:orange;" id="orange" onclick="color(this)"></div>
+            <div style="width:10px;height:10px;background:black;" id="black" onclick="color(this)"></div>
+            <div style="">Eraser</div>
+            <div style="width:15px;height:15px;background:white;border:2px solid;" id="white" onclick="color(this)"></div>
+        </div>
+    </div>
+</div>
+
+{{> javascript}}
+
 </body>
 </html>

@@ -1,0 +1,160 @@
+<!--Import jQuery before materialize.js-->
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<!-- Compiled and minified JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
+<script>
+    var canvas, ctx, flag = false,
+            prevX = 0,
+            currX = 0,
+            prevY = 0,
+            currY = 0,
+            dot_flag = false;
+
+    var x = "black",
+            y = 2;
+    // Open a websocket
+    var ws = new WebSocket("ws://localhost/ws");
+
+    var data;
+
+    function init() {
+        canvas = document.getElementById('myCanvas');
+        ctx = canvas.getContext("2d");
+        w = canvas.width;
+        h = canvas.height;
+
+        // Set the canvas data
+        data = ctx.getImageData(0, 0, 500, 500).data;
+
+        canvas.addEventListener("mousemove", function (e) {
+            findxy('move', e)
+        }, false);
+        canvas.addEventListener("mousedown", function (e) {
+            findxy('down', e)
+        }, false);
+        canvas.addEventListener("mouseup", function (e) {
+            findxy('up', e)
+        }, false);
+        canvas.addEventListener("mouseout", function (e) {
+            findxy('out', e)
+        }, false);
+    }
+
+    function color(obj) {
+        switch (obj.id) {
+            case "green":
+                x = "green";
+                break;
+            case "blue":
+                x = "blue";
+                break;
+            case "red":
+                x = "red";
+                break;
+            case "yellow":
+                x = "yellow";
+                break;
+            case "orange":
+                x = "orange";
+                break;
+            case "black":
+                x = "black";
+                break;
+            case "white":
+                x = "white";
+                break;
+        }
+        if (x == "white") y = 14;
+        else y = 2;
+
+    }
+
+    function draw() {
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(currX, currY);
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    function erase() {
+        var m = confirm("Want to clear");
+        if (m) {
+            ctx.clearRect(0, 0, w, h);
+        }
+    }
+
+    function findxy(res, e) {
+        if (res == 'down') {
+            prevX = currX;
+            prevY = currY;
+            currX = e.clientX - canvas.offsetLeft;
+            currY = e.clientY - canvas.offsetTop;
+
+            flag = true;
+            dot_flag = true;
+            if (dot_flag) {
+                ctx.beginPath();
+                ctx.fillStyle = x;
+                ctx.fillRect(currX, currY, 2, 2);
+                ctx.closePath();
+                dot_flag = false;
+            }
+        }
+        if (res == 'up' || res == "out") {
+            flag = false;
+        }
+        if(res == 'up') {
+            findChange(ctx.getImageData(0, 0, 500, 500).data);
+        }
+        if (res == 'move') {
+            if (flag) {
+                prevX = currX;
+                prevY = currY;
+                currX = e.clientX - canvas.offsetLeft;
+                currY = e.clientY - canvas.offsetTop;
+                draw();
+            }
+        }
+    }
+
+    function pixel(x, y, r, g, b) {
+        this.x = x;
+        this.y = y;
+        this.r = r;
+        this.g = g;
+        this.b = b;
+    }
+
+    function findChange(newData) {
+        var pixels = [];
+        // iterate over all pixels based on x and y coordinates
+        for(var y = 0; y < 500; y++) {
+            // loop through each column
+            for(var x = 0; x < 500; x++) {
+                var nred = newData[((500 * y) + x) * 4];
+                var ngreen = newData[((500 * y) + x) * 4 + 1];
+                var nblue = newData[((500 * y) + x) * 4 + 2];
+                var ored = data[((500 * y) + x) * 4];
+                var ogreen = data[((500 * y) + x) * 4 + 1];
+                var oblue = data[((500 * y) + x) * 4 + 2];
+                if((nred != ored) || (ngreen != ogreen) || (nblue != oblue)) {
+                    console.log("CHANGE!");
+                    pixels.push(new pixel(x,y,nred,ngreen,nblue));
+                }
+                if(pixels.length == 1500) {
+                    // send out the changes
+                    ws.send(JSON.stringify(pixels));
+                    // clear the array
+                    pixels = [];
+                }
+            }
+        }
+        data = newData;
+        if(pixels.length != 0) {
+            ws.send(JSON.stringify(pixels));
+        }
+    }
+</script>
