@@ -3,11 +3,15 @@ package csc445.shavas.client;
 import csc445.shavas.core.Colors;
 import csc445.shavas.core.Pixel;
 import csc445.shavas.core.UpdateCommand;
+import csc445.shavas.core.JoinCommand;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.NettyTransport;
 import io.atomix.catalyst.util.Listener;
 import io.atomix.copycat.client.ConnectionStrategies;
 import io.atomix.copycat.client.CopycatClient;
+import io.atomix.copycat.session.Session;
+import spark.ModelAndView;
+import spark.template.mustache.MustacheTemplateEngine;
 import io.atomix.copycat.session.Event;
 
 import javax.swing.event.ChangeEvent;
@@ -97,17 +101,29 @@ public final class Client
                 .register(csc445.shavas.core.UpdateCommand.class)
                 .register(csc445.shavas.core.GetQuery.class)
                 .register(csc445.shavas.core.Canvas.class)
-                .register(csc445.shavas.core.Pixel.class);
+                .register(csc445.shavas.core.Pixel.class)
+                .register(csc445.shavas.core.JoinCommand.class);
 
-        client.onStateChange((state) ->
-                System.err.println("Client::Client - onStateChangeListener - new state " + state.name()));
+        client.onStateChange((state) -> {
+                System.err.println("Client::Client - onStateChangeListener - new state " + state.name());
+                if (state == CopycatClient.State.CONNECTED) {
+
+                    client.submit(new JoinCommand()).join();
+                }
+            });
 
         client.connect(cluster).join();
         System.err.println("Client::Client - connected to cluster");
-
         client.session().onStateChange((s) -> System.err.println("Client::Client - new state " + s));
 
         client.onEvent("change", (e) -> System.err.println("Client::Client - e: " + e));
+
+        client.<List<Pixel>>onEvent("change", (pixels) -> {
+            pixels.forEach((p) -> System.out.println(p.toString()));
+        });
+
+        client.onEvent("Event", (e) -> System.err.println("Client::Client - e: " + e));
+        client.onEvent("UpdateCommand", (u) -> System.err.println("Client::Client - u: " + u));
     }
 
     private static final List<Pixel> TEST_PIXELS = Arrays.asList(
