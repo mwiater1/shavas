@@ -42,6 +42,7 @@ public final class Client
         String[] addresses = {"pi.cs.oswego.edu", "rho.cs.oswego.edu", "wolf.cs.oswego.edu"};
 
         Client client = Client.create(port, addresses);
+        WebsocketListener.client = client;
 
         String input = "";
         while (!input.equals("quit"))

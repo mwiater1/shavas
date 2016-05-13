@@ -11,7 +11,7 @@
             dot_flag = false;
 
     var x = "black",
-            y = 2;
+            y = 8;
     // Open a websocket
     var ws = new WebSocket("ws://localhost/ws");
 
@@ -65,7 +65,7 @@
                 break;
         }
         if (x == "white") y = 14;
-        else y = 2;
+        else y = 8;
 
     }
 
@@ -123,9 +123,7 @@
     function pixel(x, y, r, g, b) {
         this.x = x;
         this.y = y;
-        this.r = r;
-        this.g = g;
-        this.b = b;
+        this.color = (r << 16) + (g << 8) + b;
     }
 
     function findChange(newData) {

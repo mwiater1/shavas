@@ -15,7 +15,6 @@ public final class Pixel implements Serializable
         this.x = x;
         this.y = y;
 
-
         this.color = (r << 16) + (g << 8) + b;
     }
 
